@@ -5,7 +5,7 @@ using namespace std;
 #define int long long
 
 #define endl '\n'
-
+#define INF 1e9;
 #define debarr(a, n)            \
     cout << #a << ':';          \
     for (int i = 0; i < n; i++) \
@@ -122,21 +122,34 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+
 vector<vector<int>> g;
-vector<int> dp[2];
+vector<int> l; // note: l is max sum of subarra
+vector<int> dp;
 vector<int> w; // array of weights
 void dfs(int node, int parent)
 {
-    dp[node][1] = w[node];
-    dp[node][0] = 0;
+    l[node] = w[node];
+    int max1 = 0;
+    int max2 = 0; // first and second maximum single arm sums.
     for (auto v : g[node])
     {
-        if (v == parent)
-            continue;
-        dfs(v, node);
-        dp[node][1] += dp[v][0];
-        dp[node][0] += max(dp[v][0], dp[v][1]);
+        if (v != parent)
+        {
+            dfs(v, node);
+            l[node] = max(l[node], w[node] + l[v]);
+            if (l[v] >= max1)
+            {
+                max2 = max1;
+                max1 = l[v];
+            }
+            else
+            {
+                max2 = max(max2, l[v]);
+            }
+        }
     }
+    dp[node] = w[node] + max1 + max2;
 }
 void solve()
 {
@@ -144,8 +157,8 @@ void solve()
     cin >> n >> m;
     g.resize(n + 1);
     w.resize(n + 1);
-    dp[0].resize(n + 1, 0);
-    dp[1].resize(n + 1, 0);
+    dp.resize(n + 1);
+    l.resize(n + 1);
     for (int i = 1; i <= m; i++)
     {
         int a, b;
@@ -158,7 +171,11 @@ void solve()
         cin >> w[i];
     }
     dfs(1, -1);
-    int ans = max(dp[1][0], dp[1][1]);
+    int ans = -INF;
+    for (int i = 1; i <= n; i++)
+    {
+        ans = max(ans, dp[i]);
+    }
     cout << ans << endl;
 }
 
