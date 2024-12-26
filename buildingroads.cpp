@@ -122,124 +122,42 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
-using state = pair<int, int>;
-#define F first
-#define S second
-vector<vector<state>> g;
-map<int, int> sizeOf;
-// void dfs(int node, int par, int &size)
-// {
-//     vis[node] = 1;
-//     size++;
-//     for (auto v : g[node])
-//     {
-//         if (!vis[v] && v != par)
-//         {
-
-//             dfs(v, node, size);
-//         }
-//     }
-//     sizeOf[node] = size;
-// }
-int n, m;
-
-vector<vector<int>> plot;
-vector<vector<int>> vis;
-
-bool is_valid(state el)
+vector<vector<int>> g;
+vector<int> vis;
+void dfs(int node, int par)
 {
-    if (plot[el.F][el.S] != 1)
+    vis[node] = 1;
+    for (auto v : g[node])
     {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-vector<state> neighbors(state el)
-{
-    vector<state> nbors;
-    vector<int> dx = {1, 0, -1, 0};
-    vector<int> dy = {0, 1, 0, -1};
-
-    for (int i = 0; i < 4; i++)
-    {
-        if (el.F + dx[i] < 0 || el.S + dy[i] < 0 || el.F + dx[i] >= n || el.S + dy[i] >= m)
-            continue;
-        if (is_valid(el) && is_valid({el.F + dx[i], el.S + dy[i]}))
+        if (!vis[v] && v != par)
         {
-            nbors.emplace_back(make_pair(el.F + dx[i], el.S + dy[i]));
+            dfs(v, node);
         }
     }
-    return nbors;
 }
-int comp_size = 0;
-void bfs(state el)
-{
-
-    vis[el.F][el.S] = 1;
-
-    queue<state> q;
-    q.push(el);
-    vector<state> components;
-    int sz = 1;
-    while (!q.empty())
-    {
-        state x = q.front();
-        components.push_back(x);
-        q.pop();
-        vector<state> nbors = neighbors(x);
-        for (auto v : nbors)
-        {
-
-            if (!vis[v.F][v.S])
-            {
-                sz++;
-                q.push({v.F, v.S});
-                vis[v.F][v.S] = 1;
-            }
-        }
-    }
-    for (auto el : components)
-    {
-        plot[el.F][el.S] = sz > 1 ? sz : 0;
-    }
-}
-
 void solve()
 {
+    int n, m;
     cin >> n >> m;
-    plot.assign(n, vector<int>(m, 0));
-    vis.assign(n, vector<int>(m, 0));
-
-    for (int i = 0; i < n; i++)
+    g.resize(n + 1);
+    vis.assign(n + 1, 0);
+    for (int i = 1; i <= m; i++)
     {
-        for (int j = 0; j < m; j++)
+        int a, b;
+        cin >> a >> b;
+        g[a].emplace_back(b);
+        g[b].emplace_back(a);
+    }
+    int comp = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        if (!vis[i])
         {
-            cin >> plot[i][j];
+            dfs(i, 0);
+            comp++;
         }
     }
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < m; j++)
-        {
-            if (!is_valid({i, j}))
-                continue;
-            if (!vis[i][j])
-            {
-                bfs({i, j});
-            }
-        }
-    }
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < m; j++)
-        {
-            cout << plot[i][j] << " ";
-        }
-        cout << endl;
-    }
+    cout << comp - 1 << endl;
 }
 
 signed main()
@@ -247,9 +165,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }
