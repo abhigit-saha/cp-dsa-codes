@@ -122,59 +122,108 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+vector<vector<char>> plot;
 int n, m;
-vector<vector<int>> g;
-vector<int> dist;
-set<pair<int, int>> edges;
-
-void bfs01(int src)
+vector<int> dx = {1, 0, -1, 0};
+vector<int> dy = {0, -1, 0, 1};
+vector<vector<int>> monsterDist, aDist, vis;
+bool isValid(pair<int, int> node)
 {
-    dist[src] = 0;
-    deque<int> dq;
-    dq.push_front(src);
-    while (!dq.empty())
-    {
-        int x = dq.front();
-        dq.pop_front();
-        for (auto v : g[x])
-        {
-            if (edges.find({x, v}) == edges.end())
-            {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
-            }
-            else
-            {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
-            }
-        }
-    }
+    if (node.first < 0 || node.first >= n || node.second < 0 || node.second >= m || plot[node.first][node.second] == '#')
+        return false;
+    return true;
 }
 void solve()
 {
     // Your code here
     cin >> n >> m;
-    g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
-    for (int i = 0; i < m; i++)
+    plot.resize(n, vector<char>(m));
+    monsterDist.resize(n, vector<int>(m, 1e9));
+    aDist.resize(n, vector<int>(m, 1e9));
+    vis.resize(n, vector<int>(m, 0));
+
+    queue<pair<int, int>> monster, a;
+    for (int i = 0; i < n; i++)
     {
-        int a, b;
-        cin >> a >> b;
-        edges.insert({a, b});
-        g[a].emplace_back(b);
-        g[b].emplace_back(a);
+        for (int j = 0; j < m; j++)
+        {
+            cin >> plot[i][j];
+            if (plot[i][j] == 'M')
+            {
+                monster.push({i, j});
+                monsterDist[i][j] = 0;
+            }
+            if (plot[i][j] == 'A')
+            {
+                a.push({i, j});
+                aDist[i][j] = 0;
+            }
+        }
     }
-    bfs01(1);
-    cout << dist[n] << endl;
-    g.clear();
-    edges.clear();
+
+    while (!monster.empty())
+    {
+        pair<int, int> x = monster.front();
+
+        monster.pop();
+        if (vis[x.first][x.second])
+            continue;
+        vis[x.first][x.second] = 1;
+        for (int i = 0; i < 4; i++)
+        {
+            int xx = x.first + dx[i];
+            int yy = x.second + dy[i];
+            if (isValid({xx, yy}) && monsterDist[xx][yy] > monsterDist[x.first][x.second] + 1)
+            {
+                monsterDist[xx][yy] = monsterDist[x.first][x.second] + 1;
+                monster.push({xx, yy});
+            }
+        }
+    }
+    vis.assign(n, vector<int>(m, 0));
+    while (!a.empty())
+    {
+        pair<int, int> x = a.front();
+        a.pop();
+        if (vis[x.first][x.second])
+            continue;
+        vis[x.first][x.second] = 1;
+        for (int i = 0; i < 4; i++)
+        {
+            int xx = x.first + dx[i];
+            int yy = x.second + dy[i];
+            if (isValid({xx, yy}) && aDist[xx][yy] > aDist[x.first][x.second] + 1)
+            {
+                aDist[xx][yy] = aDist[x.first][x.second] + 1;
+                a.push({xx, yy});
+            }
+        }
+    }
+    int dist = 1e9, possible = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            if (i == 0 || i == n - 1 || j == 0 || j == m - 1)
+            {
+                if (aDist[i][j] < monsterDist[i][j])
+                {
+                    possible = 1;
+                    dist = min(dist, aDist[i][j]);
+                }
+            }
+        }
+    }
+    if (possible)
+    {
+        cout << "YES" << endl;
+        cout << dist << endl;
+    }
+    else
+    {
+        cout << "NO" << endl;
+    }
 }
 
 signed main()
@@ -182,9 +231,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }

@@ -122,59 +122,33 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
-int n, m;
+int n;
+vector<int> col;
 vector<vector<int>> g;
-vector<int> dist;
-set<pair<int, int>> edges;
-
-void bfs01(int src)
+void dfs(int node)
 {
-    dist[src] = 0;
-    deque<int> dq;
-    dq.push_front(src);
-    while (!dq.empty())
+    col[node]++;
+    for (auto v : g[node])
     {
-        int x = dq.front();
-        dq.pop_front();
-        for (auto v : g[x])
-        {
-            if (edges.find({x, v}) == edges.end())
-            {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
-            }
-            else
-            {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
-            }
-        }
+        dfs(v);
     }
 }
 void solve()
 {
     // Your code here
-    cin >> n >> m;
+    cin >> n;
+    int m;
+    cin >> m;
     g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
+    col.assign(n + 1, 0);
     for (int i = 0; i < m; i++)
     {
         int a, b;
         cin >> a >> b;
-        edges.insert({a, b});
         g[a].emplace_back(b);
-        g[b].emplace_back(a);
     }
-    bfs01(1);
-    cout << dist[n] << endl;
-    g.clear();
-    edges.clear();
+    dfs(1);
+    cout << col[n] << endl;
 }
 
 signed main()
@@ -182,9 +156,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }

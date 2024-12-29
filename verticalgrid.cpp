@@ -121,60 +121,118 @@ int binpow(int b, int p, int mod)
     }
     return ans;
 }
-int mod = 1e9 + 7;
-int n, m;
-vector<vector<int>> g;
-vector<int> dist;
-set<pair<int, int>> edges;
 
-void bfs01(int src)
+#define F first
+#define S second
+int mod = 1e9 + 7;
+vector<string> grid;
+int n;
+void gravity(int col)
 {
-    dist[src] = 0;
-    deque<int> dq;
-    dq.push_front(src);
-    while (!dq.empty())
+    stack<char> st;
+    for (int i = 0; i < n; i++)
     {
-        int x = dq.front();
-        dq.pop_front();
-        for (auto v : g[x])
+        if (grid[i][col] != '0')
         {
-            if (edges.find({x, v}) == edges.end())
-            {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
-            }
-            else
-            {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
-            }
+            st.push(grid[i][col]);
+        }
+    }
+    int dfc = 0;
+    while (!st.empty())
+    {
+        grid[(n - 1) - dfc][col] = st.top();
+        st.pop();
+        dfc++;
+    }
+    for (int i = 0; i <= (n - 1) - dfc; i++)
+    {
+        grid[i][col] = '0';
+    }
+}
+vector<vector<int>> vis;
+vector<int> dx = {1, 0, -1, 0}, dy = {0, 1, 0, -1};
+bool valid(int i, int j)
+{
+    if (i < 0 || i >= n || j < 0 || j >= 10)
+        return false;
+    return true;
+}
+void dfs(pair<int, int> node, int &size, int del)
+{
+    vis[node.F][node.S] = 1 + del;
+
+    char val = grid[node.F][node.S];
+    if (del)
+    {
+        grid[node.F][node.S] = '0';
+    }
+    else
+    {
+        size++;
+    }
+    for (int i = 0; i < 4; i++)
+    {
+        int nr = node.F + dx[i];
+        int nc = node.S + dy[i];
+
+        if (valid(nr, nc) && !(vis[nr][nc] == 1 + del) && grid[nr][nc] == val)
+        {
+            dfs({nr, nc}, size, del);
         }
     }
 }
 void solve()
 {
     // Your code here
-    cin >> n >> m;
-    g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
-    for (int i = 0; i < m; i++)
+    int k;
+    cin >> n >> k;
+    grid.resize(n);
+    for (int i = 0; i < n; i++)
     {
-        int a, b;
-        cin >> a >> b;
-        edges.insert({a, b});
-        g[a].emplace_back(b);
-        g[b].emplace_back(a);
+        cin >> grid[i];
     }
-    bfs01(1);
-    cout << dist[n] << endl;
-    g.clear();
-    edges.clear();
+
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     gravity(i);
+    // }
+    // cout << "------------------------------" << endl;
+    // vector<int> sizes;
+    bool complete = false;
+    // vis.resize(n, vector<int>(10, 0));
+    while (!complete)
+    {
+        vis.assign(n, vector<int>(10, 0));
+        int maxsize = 0;
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+
+                if (!vis[i][j] && grid[i][j] != '0')
+                {
+                    int size = 0;
+                    dfs({i, j}, size, 0);
+                    if (size >= k)
+                    {
+                        dfs({i, j}, size, 1);
+                    }
+                    maxsize = max(size, maxsize);
+                }
+            }
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            gravity(i);
+        }
+        if (maxsize < k)
+            complete = true;
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        cout << grid[i] << endl;
+    }
 }
 
 signed main()
@@ -182,9 +240,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }

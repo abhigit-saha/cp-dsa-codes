@@ -121,60 +121,83 @@ int binpow(int b, int p, int mod)
     }
     return ans;
 }
+#define F first
+#define S second
 int mod = 1e9 + 7;
-int n, m;
-vector<vector<int>> g;
-vector<int> dist;
-set<pair<int, int>> edges;
-
-void bfs01(int src)
+vector<vector<char>> plot;
+vector<vector<int>> vis;
+int n;
+vector<int> dx = {1, 0, -1, 0}, dy = {0, 1, 0, -1};
+bool valid(int i, int j)
 {
-    dist[src] = 0;
-    deque<int> dq;
-    dq.push_front(src);
-    while (!dq.empty())
-    {
-        int x = dq.front();
-        dq.pop_front();
-        for (auto v : g[x])
-        {
-            if (edges.find({x, v}) == edges.end())
-            {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
-            }
-            else
-            {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
-            }
-        }
-    }
+    if (i < 1 || i > n || j < 1 || j > n)
+        return false;
+    return true;
 }
 void solve()
 {
     // Your code here
-    cin >> n >> m;
-    g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
-    for (int i = 0; i < m; i++)
+    cin >> n;
+    plot.resize(n + 2, vector<char>(n + 2, '.'));
+    vis.assign(n + 2, vector<int>(n + 2, 0));
+
+    for (int i = 1; i <= n; i++)
     {
-        int a, b;
-        cin >> a >> b;
-        edges.insert({a, b});
-        g[a].emplace_back(b);
-        g[b].emplace_back(a);
+        for (int j = 1; j <= n; j++)
+        {
+            cin >> plot[i][j];
+        }
     }
-    bfs01(1);
-    cout << dist[n] << endl;
-    g.clear();
-    edges.clear();
+    vector<pair<int, int>> req; //{area, per}
+    int count = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= n; j++)
+        {
+            if (!vis[i][j] && plot[i][j] == '#')
+            {
+                // cout << "HEY this is somthing: " << i << " " << j << endl;
+                int area = 0, per = 0;
+                queue<pair<int, int>> q;
+                q.push({i, j});
+                vis[i][j] = 1;
+                while (!q.empty())
+                {
+                    pair<int, int> x = q.front();
+                    if (plot[x.F][x.S] == '#')
+                    {
+                        area++;
+                    }
+                    q.pop();
+                    for (int k = 0; k < 4; k++)
+                    {
+                        if (plot[x.F + dx[k]][x.S + dy[k]] == '.')
+                            per++;
+                        if (valid(x.F + dx[k], x.S + dy[k]) && !vis[x.F + dx[k]][x.S + dy[k]])
+                        {
+                            if (plot[x.F + dx[k]][x.S + dy[k]] == '#')
+                            {
+                                q.push({x.F + dx[k], x.S + dy[k]});
+                                vis[x.F + dx[k]][x.S + dy[k]] = 1;
+                            }
+                        }
+                    }
+                }
+                req.push_back({area, per});
+            }
+        }
+    }
+    sort(req.begin(), req.end(), [](pair<int, int> x1, pair<int, int> x2)
+         {
+             if (x1.F > x2.F)
+                 return true;
+             else if (x1.F == x2.F)
+             {
+                 return x1.S < x2.S;
+             }
+             return false; });
+
+    cout << req[0].F << " " << req[0].S << endl;
 }
 
 signed main()
@@ -182,9 +205,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }

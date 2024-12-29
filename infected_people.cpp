@@ -122,59 +122,74 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+vector<vector<int>> plot;
 int n, m;
-vector<vector<int>> g;
-vector<int> dist;
-set<pair<int, int>> edges;
-
-void bfs01(int src)
+vector<int> dx = {1, 0, -1, 0};
+vector<int> dy = {0, -1, 0, 1};
+vector<vector<int>> dist, vis;
+bool isValid(pair<int, int> node)
 {
-    dist[src] = 0;
-    deque<int> dq;
-    dq.push_front(src);
-    while (!dq.empty())
-    {
-        int x = dq.front();
-        dq.pop_front();
-        for (auto v : g[x])
-        {
-            if (edges.find({x, v}) == edges.end())
-            {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
-            }
-            else
-            {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
-            }
-        }
-    }
+    if (node.first < 0 || node.first >= n || node.second < 0 || node.second >= m || plot[node.first][node.second] == 0)
+        return false;
+    return true;
 }
 void solve()
 {
     // Your code here
     cin >> n >> m;
-    g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
-    for (int i = 0; i < m; i++)
+    plot.resize(n, vector<int>(m));
+    dist.resize(n, vector<int>(m, 1e9));
+    vis.resize(n, vector<int>(m, 0));
+
+    queue<pair<int, int>> infected;
+    for (int i = 0; i < n; i++)
     {
-        int a, b;
-        cin >> a >> b;
-        edges.insert({a, b});
-        g[a].emplace_back(b);
-        g[b].emplace_back(a);
+        for (int j = 0; j < m; j++)
+        {
+            cin >> plot[i][j];
+            if (plot[i][j] == 2)
+            {
+                infected.push({i, j});
+                dist[i][j] = 0;
+            }
+        }
     }
-    bfs01(1);
-    cout << dist[n] << endl;
-    g.clear();
-    edges.clear();
+
+    while (!infected.empty())
+    {
+        pair<int, int> x = infected.front();
+
+        infected.pop();
+        if (vis[x.first][x.second])
+            continue;
+        vis[x.first][x.second] = 1;
+        for (int i = 0; i < 4; i++)
+        {
+            int xx = x.first + dx[i];
+            int yy = x.second + dy[i];
+            if (isValid({xx, yy}) && dist[xx][yy] > dist[x.first][x.second] + 1)
+            {
+                dist[xx][yy] = dist[x.first][x.second] + 1;
+                infected.push({xx, yy});
+            }
+        }
+    }
+
+    int maxtime = 0;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
+            if (plot[i][j] == 1 && dist[i][j] == 1e9)
+            {
+                cout << -1 << endl;
+                return;
+            }
+            if (plot[i][j] == 1)
+                maxtime = max(maxtime, dist[i][j]);
+        }
+    }
+    cout << maxtime << endl;
 }
 
 signed main()
@@ -182,9 +197,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }

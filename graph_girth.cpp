@@ -122,37 +122,27 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
-int n, m;
 vector<vector<int>> g;
 vector<int> dist;
-set<pair<int, int>> edges;
-
-void bfs01(int src)
+void bfs(int node, int &minm)
 {
-    dist[src] = 0;
-    deque<int> dq;
-    dq.push_front(src);
-    while (!dq.empty())
+    dist[node] = 0;
+    queue<int> q;
+    q.push(node);
+    while (!q.empty())
     {
-        int x = dq.front();
-        dq.pop_front();
+        int x = q.front();
+        q.pop();
         for (auto v : g[x])
         {
-            if (edges.find({x, v}) == edges.end())
+            if (dist[v] == 1e9)
             {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
+                q.push(v);
+                dist[v] = dist[x] + 1;
             }
-            else
+            else if (dist[v] >= dist[x])
             {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
+                minm = min(minm, dist[x] + dist[v] + 1);
             }
         }
     }
@@ -160,21 +150,23 @@ void bfs01(int src)
 void solve()
 {
     // Your code here
+    int n, m;
     cin >> n >> m;
     g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
     for (int i = 0; i < m; i++)
     {
         int a, b;
         cin >> a >> b;
-        edges.insert({a, b});
         g[a].emplace_back(b);
         g[b].emplace_back(a);
     }
-    bfs01(1);
-    cout << dist[n] << endl;
-    g.clear();
-    edges.clear();
+    int minm = 1e9, cycle = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        dist.assign(n + 1, 1e9);
+        bfs(i, minm);
+    }
+    cout << (minm == 1e9 ? -1 : minm) << endl;
 }
 
 signed main()
@@ -182,9 +174,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }

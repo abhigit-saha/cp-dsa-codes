@@ -122,13 +122,15 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+#define F first
+#define S second
 int n, m;
-vector<vector<int>> g;
-vector<int> dist;
-set<pair<int, int>> edges;
+vector<vector<pair<int, int>>> g;
 
 void bfs01(int src)
 {
+    vector<int> dist(n + 1, 1e9);
+
     dist[src] = 0;
     deque<int> dq;
     dq.push_front(src);
@@ -138,43 +140,39 @@ void bfs01(int src)
         dq.pop_front();
         for (auto v : g[x])
         {
-            if (edges.find({x, v}) == edges.end())
+            int node = v.F;
+            int cost = v.S;
+            if (dist[node] > dist[x] + cost)
             {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
-            }
-            else
-            {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
+                dist[node] = dist[x] + cost;
+                if (cost == 1)
+                    dq.push_back(node);
+                else
+                    dq.push_front(node);
             }
         }
     }
+    if (dist[n] == 1e9)
+        cout << -1 << endl;
+    else
+        cout << dist[n] << endl;
 }
 void solve()
 {
     // Your code here
     cin >> n >> m;
     g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
     for (int i = 0; i < m; i++)
     {
         int a, b;
         cin >> a >> b;
-        edges.insert({a, b});
-        g[a].emplace_back(b);
-        g[b].emplace_back(a);
+        if (a == b)
+            continue;
+        g[a].push_back({b, 0});
+        g[b].push_back({a, 1});
     }
     bfs01(1);
-    cout << dist[n] << endl;
     g.clear();
-    edges.clear();
 }
 
 signed main()

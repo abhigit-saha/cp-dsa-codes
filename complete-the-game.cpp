@@ -122,59 +122,42 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
-int n, m;
+int n;
 vector<vector<int>> g;
-vector<int> dist;
-set<pair<int, int>> edges;
-
-void bfs01(int src)
+vector<int> dp;
+int rec(int level)
 {
-    dist[src] = 0;
-    deque<int> dq;
-    dq.push_front(src);
-    while (!dq.empty())
+    if (level == n)
     {
-        int x = dq.front();
-        dq.pop_front();
-        for (auto v : g[x])
-        {
-            if (edges.find({x, v}) == edges.end())
-            {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
-            }
-            else
-            {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
-            }
-        }
+        return 1;
     }
+    if (dp[level] != -1)
+    {
+        return dp[level];
+    }
+    int ans = 0;
+    for (auto v : g[level])
+    {
+        ans += rec(v) % mod;
+        ans %= mod;
+    }
+    return dp[level] = ans;
 }
 void solve()
 {
     // Your code here
+    int m;
     cin >> n >> m;
     g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
+    dp.assign(n + 1, -1);
     for (int i = 0; i < m; i++)
     {
         int a, b;
         cin >> a >> b;
-        edges.insert({a, b});
         g[a].emplace_back(b);
-        g[b].emplace_back(a);
     }
-    bfs01(1);
-    cout << dist[n] << endl;
-    g.clear();
-    edges.clear();
+    int ans = rec(1);
+    cout << ans << endl;
 }
 
 signed main()
@@ -182,9 +165,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }

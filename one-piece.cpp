@@ -122,59 +122,63 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+vector<int> dr = {0, 0, 1, -1};
+vector<int> dc = {1, -1, 0, 0};
+#define F first
+#define S second
 int n, m;
-vector<vector<int>> g;
-vector<int> dist;
-set<pair<int, int>> edges;
 
-void bfs01(int src)
+bool valid(int i, int j)
 {
-    dist[src] = 0;
-    deque<int> dq;
-    dq.push_front(src);
-    while (!dq.empty())
-    {
-        int x = dq.front();
-        dq.pop_front();
-        for (auto v : g[x])
-        {
-            if (edges.find({x, v}) == edges.end())
-            {
-                if (dist[v] > dist[x] + 1)
-                {
-                    dist[v] = dist[x] + 1;
-                    dq.push_back(v);
-                }
-            }
-            else
-            {
-                if (dist[v] > dist[x])
-                {
-                    dist[v] = dist[x];
-                    dq.push_front(v);
-                }
-            }
-        }
-    }
+    if (i < 0 || i >= n || j < 0 || j >= m)
+        return false;
+    return true;
 }
 void solve()
 {
     // Your code here
     cin >> n >> m;
-    g.resize(n + 1);
-    dist.resize(n + 1, 1e9);
-    for (int i = 0; i < m; i++)
+    vector<vector<int>> grid(n, vector<int>(m)), dist(n, vector<int>(m, 1e9));
+    for (int i = 0; i < n; i++)
     {
-        int a, b;
-        cin >> a >> b;
-        edges.insert({a, b});
-        g[a].emplace_back(b);
-        g[b].emplace_back(a);
+        for (int j = 0; j < m; j++)
+        {
+            cin >> grid[i][j];
+        }
     }
-    bfs01(1);
-    cout << dist[n] << endl;
-    g.clear();
-    edges.clear();
+    dist[0][0] = 0;
+    deque<pair<int, int>> dq;
+    dq.push_front({0, 0});
+    while (!dq.empty())
+    {
+        pair<int, int> x = dq.front();
+        dq.pop_front();
+        int dir = grid[x.F][x.S];
+        for (int i = 0; i < 4; i++)
+        {
+            int nr = x.F + dr[i];
+            int nc = x.S + dc[i];
+            if (!valid(nr, nc))
+                continue;
+            if (i == dir - 1)
+            {
+                if (dist[nr][nc] > dist[x.F][x.S])
+                {
+                    dist[nr][nc] = dist[x.F][x.S];
+                    dq.push_front({nr, nc});
+                }
+            }
+            else
+            {
+                if (dist[nr][nc] > dist[x.F][x.S] + 1)
+                {
+                    dist[nr][nc] = dist[x.F][x.S] + 1;
+                    dq.push_back({nr, nc});
+                }
+            }
+        }
+    }
+    cout << (dist[n - 1][m - 1] != 1e9 ? dist[n - 1][m - 1] : -1) << endl;
 }
 
 signed main()
@@ -182,9 +186,7 @@ signed main()
     ios_base::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int t;
-    cin >> t;
-    while (t--)
-        solve();
+    // int t; cin >> t; while (t--)
+    solve();
     return 0;
 }
