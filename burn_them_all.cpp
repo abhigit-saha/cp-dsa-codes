@@ -122,45 +122,61 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+#define F first
+#define S second
 void solve()
 {
     // Your code here
-    int n, m, q;
-    cin >> n >> m >> q;
-    vector<vector<int>> dist(n + 1, vector<int>(n + 1));
-    for (int i = 1; i <= n; i++)
+    int n, m;
+    cin >> n >> m;
+    vector<vector<pair<int, int>>> g(n + 1);
+    vector<int> vis(n + 1, 0), dist(n + 1, 1e18);
+    for (int i = 0; i < m; i++)
     {
-        for (int j = 1; j <= n; j++)
-        {
-            if (i != j)
-                dist[i][j] = 1e18;
-        }
+        int u, v, d;
+        cin >> u >> v >> d;
+        g[u].push_back({v, d});
+        g[v].push_back({u, d});
     }
+    int a;
+    cin >> a;
+    dist[a] = 0;
+    priority_queue<pair<int, int>> pq;
+    pq.push({0, a});
+    while (!pq.empty())
+    {
 
-    for (int i = 1; i <= m; i++)
-    {
-        int a, b, c;
-        cin >> a >> b >> c;
-        dist[a][b] = min(dist[a][b], c);
-        dist[b][a] = dist[a][b];
-    }
-    for (int k = 1; k <= n; k++)
-    {
-        for (int i = 1; i <= n; i++)
+        pair<int, int> x = pq.top();
+        pq.pop();
+        if (vis[x.S])
+            continue;
+        vis[x.S] = 1;
+        for (auto [node, len] : g[x.S])
         {
-            for (int j = 1; j <= n; j++)
+            if (dist[node] > dist[x.S] + len)
             {
-                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+                dist[node] = dist[x.S] + len;
+                pq.push({-dist[node], node});
             }
         }
     }
-    while (q--)
-    {
-        int a, b;
-        cin >> a >> b;
+    int maxt = 0;
 
-        cout << (dist[a][b] != 1e18 ? dist[a][b] : -1) << endl;
+    for (int u = 1; u <= n; u++)
+    {
+        for (auto [v, len] : g[u])
+        {
+            if (abs(dist[v] - dist[u]) >= len)
+            {
+                maxt = max(maxt, 10 * (min(dist[v], dist[u]) + len));
+            }
+            else
+            {
+                maxt = max(maxt, 5 * (len + dist[v] + dist[u]));
+            }
+        }
     }
+    cout << maxt << endl;
 }
 
 signed main()

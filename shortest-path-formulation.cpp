@@ -122,44 +122,68 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+#define F first
+#define S second
 void solve()
 {
     // Your code here
-    int n, m, q;
-    cin >> n >> m >> q;
-    vector<vector<int>> dist(n + 1, vector<int>(n + 1));
+    int n, m, k;
+    cin >> n >> m >> k;
+    vector<int> c(n + 1);
+    vector<vector<pair<int, int>>> g(n + 1);
+    vector<vector<int>> dist(n + 1, vector<int>(100100, 1e18)), vis(n + 1, vector<int>(100100));
     for (int i = 1; i <= n; i++)
     {
-        for (int j = 1; j <= n; j++)
-        {
-            if (i != j)
-                dist[i][j] = 1e18;
-        }
+        cin >> c[i];
     }
+    for (int i = 0; i < m; i++)
+    {
+        int a, b, p, d;
+        g[a].push_back({b, p});
+        g[b].push_back({a, p});
+    }
+    int st, end;
+    cin >> st >> end;
 
-    for (int i = 1; i <= m; i++)
+    dist[st][k] = 0;
+    vis[st][k] = 0;
+    priority_queue<pair<int, pair<int, int>>> q;
+    q.push({0, {st, k}});
+    while (!q.empty())
     {
-        int a, b, c;
-        cin >> a >> b >> c;
-        dist[a][b] = min(dist[a][b], c);
-        dist[b][a] = dist[a][b];
-    }
-    for (int k = 1; k <= n; k++)
-    {
-        for (int i = 1; i <= n; i++)
+        pair<int, pair<int, int>> x = q.top();
+        q.pop();
+        int curdist = -x.F;
+        int node = x.S.F;
+        int tank = x.S.S;
+        if (vis[node][tank])
+            continue;
+        vis[node][tank] = 1;
+        for (auto v : g[node])
         {
-            for (int j = 1; j <= n; j++)
+            int ngh = v.F;
+            int ptl = v.S;
+
+            // go to the neighboring node;
+            if (tank >= ptl)
             {
-                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+                if (!vis[ngh][tank - ptl] && dist[ngh][tank - ptl] > dist[node][tank])
+                {
+                    dist[ngh][tank - ptl] = dist[node][tank];
+                    q.push({-dist[ngh][tank - ptl], {ngh, tank - ptl}});
+                }
             }
         }
-    }
-    while (q--)
-    {
-        int a, b;
-        cin >> a >> b;
+        // increase the tank here itself;
 
-        cout << (dist[a][b] != 1e18 ? dist[a][b] : -1) << endl;
+        if (tank < k)
+        {
+            if (!vis[node][tank + 1] && dist[node][tank + 1] > dist[node][tank] + c[node])
+            {
+                dist[node][tank + 1] = dist[node][tank] + c[node];
+                q.push({-dist[node][tank + 1], {node, tank + 1}});
+            }
+        }
     }
 }
 

@@ -122,45 +122,56 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+
+struct edge
+{
+    int u, v, w;
+};
 void solve()
 {
     // Your code here
-    int n, m, q;
-    cin >> n >> m >> q;
-    vector<vector<int>> dist(n + 1, vector<int>(n + 1));
-    for (int i = 1; i <= n; i++)
-    {
-        for (int j = 1; j <= n; j++)
-        {
-            if (i != j)
-                dist[i][j] = 1e18;
-        }
-    }
-
+    int n, m;
+    cin >> n >> m;
+    vector<edge> g(m + 1);
     for (int i = 1; i <= m; i++)
     {
         int a, b, c;
         cin >> a >> b >> c;
-        dist[a][b] = min(dist[a][b], c);
-        dist[b][a] = dist[a][b];
+        g[i].u = a;
+        g[i].v = b;
+        g[i].w = -c;
     }
-    for (int k = 1; k <= n; k++)
+    vector<int> dist(n + 1, 1e18);
+    dist[1] = 0;
+    for (int i = 1; i <= n; i++)
     {
-        for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
         {
-            for (int j = 1; j <= n; j++)
+            int u = g[j].u;
+            int v = g[j].v;
+            int w = g[j].w;
+            if (dist[v] > dist[u] + w)
             {
-                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+                dist[v] = dist[u] + w;
             }
         }
     }
-    while (q--)
+    for (int i = 1; i <= n; i++)
     {
-        int a, b;
-        cin >> a >> b;
-
-        cout << (dist[a][b] != 1e18 ? dist[a][b] : -1) << endl;
+        for (int j = 1; j <= m; j++)
+        {
+            int u = g[j].u;
+            int v = g[j].v;
+            int w = g[j].w;
+            if (dist[v] > dist[u] + w)
+            {
+                cout << -1 << endl;
+                return;
+            }
+        }
     }
+    cout << -dist[n] << endl;
+    return;
 }
 
 signed main()

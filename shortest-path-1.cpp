@@ -122,45 +122,47 @@ int binpow(int b, int p, int mod)
     return ans;
 }
 int mod = 1e9 + 7;
+#define F first
+#define S second
 void solve()
 {
     // Your code here
-    int n, m, q;
-    cin >> n >> m >> q;
-    vector<vector<int>> dist(n + 1, vector<int>(n + 1));
-    for (int i = 1; i <= n; i++)
-    {
-        for (int j = 1; j <= n; j++)
-        {
-            if (i != j)
-                dist[i][j] = 1e18;
-        }
-    }
-
-    for (int i = 1; i <= m; i++)
+    int n, m;
+    cin >> n >> m;
+    vector<int> vis(n + 1, 0), dist(n + 1, 1e18);
+    vector<vector<pair<int, int>>> g(n + 1);
+    for (int i = 0; i < m; i++)
     {
         int a, b, c;
         cin >> a >> b >> c;
-        dist[a][b] = min(dist[a][b], c);
-        dist[b][a] = dist[a][b];
+        g[a].push_back({b, c});
     }
-    for (int k = 1; k <= n; k++)
+    priority_queue<pair<int, int>> pq;
+    dist[1] = 0;
+    pq.push({-0, 1});
+    while (!pq.empty())
     {
-        for (int i = 1; i <= n; i++)
+        pair<int, int> x = pq.top();
+        pq.pop();
+        if (vis[x.S])
+            continue;
+        vis[x.S] = 1;
+        for (auto v : g[x.S])
         {
-            for (int j = 1; j <= n; j++)
+            int node = v.F;
+            int len = v.S;
+            if (dist[node] > dist[x.S] + len)
             {
-                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+                dist[node] = dist[x.S] + len;
+                pq.push({-dist[node], node});
             }
         }
     }
-    while (q--)
+    for (int i = 1; i <= n; i++)
     {
-        int a, b;
-        cin >> a >> b;
-
-        cout << (dist[a][b] != 1e18 ? dist[a][b] : -1) << endl;
+        cout << (dist[i] != 1e18 ? dist[i] : -1) << " ";
     }
+    cout << endl;
 }
 
 signed main()

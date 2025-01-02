@@ -125,42 +125,57 @@ int mod = 1e9 + 7;
 void solve()
 {
     // Your code here
-    int n, m, q;
-    cin >> n >> m >> q;
-    vector<vector<int>> dist(n + 1, vector<int>(n + 1));
+    int n;
+    cin >> n;
+    vector<vector<int>> dist(n + 1, vector<int>(n + 1, 1e18));
+    vector<int> edgesSum(n + 1);
     for (int i = 1; i <= n; i++)
     {
         for (int j = 1; j <= n; j++)
         {
-            if (i != j)
-                dist[i][j] = 1e18;
+            int len;
+            cin >> len;
+
+            dist[i][j] = (len != 0 ? len : 1e18);
+            if (i == j)
+                dist[i][j] = 0;
+            edgesSum[i] += len;
+            edgesSum[j] += len;
         }
     }
 
-    for (int i = 1; i <= m; i++)
+    vector<int> rem;
+    for (int i = 1; i <= n; i++)
     {
-        int a, b, c;
-        cin >> a >> b >> c;
-        dist[a][b] = min(dist[a][b], c);
-        dist[b][a] = dist[a][b];
+        int el;
+        cin >> el;
+        rem.push_back(el);
     }
-    for (int k = 1; k <= n; k++)
+    vector<int> sums;
+    for (int k = n - 1; k >= 0; k--)
     {
+        int sum = 0;
         for (int i = 1; i <= n; i++)
         {
             for (int j = 1; j <= n; j++)
             {
-                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+                dist[i][j] = min(dist[i][j], dist[i][rem[k]] + dist[rem[k]][j]);
             }
         }
+        for (int i = k; i < n; i++)
+        {
+            for (int j = k; j < n; j++)
+            {
+                sum += dist[rem[i]][rem[j]]; // since after this step only rem0...remk-1 are left
+            }
+        }
+        sums.push_back(sum);
     }
-    while (q--)
+    for (int i = sums.size() - 1; i >= 0; i--)
     {
-        int a, b;
-        cin >> a >> b;
-
-        cout << (dist[a][b] != 1e18 ? dist[a][b] : -1) << endl;
+        cout << sums[i] << " ";
     }
+    cout << endl;
 }
 
 signed main()
