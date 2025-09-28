@@ -1,3 +1,1 @@
-for (auto el : st)
-    //     cout << el << " ";
-    // cout << endl;
+2 6 
